@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authguardian
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=authguardian
+      - DB_SSLMODE=disable
+    depends_on:
+      - postgres
+    networks:
+      - authguardian_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: authguardian_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=authguardian
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - authguardian_network
+    restart: unless-stopped
+
+networks:
+  authguardian_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

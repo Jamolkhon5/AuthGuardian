@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
+    user_id TEXT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     user_ip VARCHAR(50) NOT NULL,
     user_agent VARCHAR(255),
