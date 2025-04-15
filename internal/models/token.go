@@ -6,7 +6,7 @@ import (
 
 // RefreshToken представляет собой модель данных для хранение в базе
 type RefreshToken struct {
-	ID        string    `pg:"id,pk"`
+	ID        string    `pg:"id,pk,type:uuid"`
 	UserID    string    `pg:"user_id,notnull"`
 	TokenHash string    `pg:"token_hash,notnull"`
 	UserIP    string    `pg:"user_ip,notnull"`

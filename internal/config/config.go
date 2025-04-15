@@ -53,11 +53,11 @@ type EmailConfig struct {
 // LoadConfig загружает конфигурацию из env файл
 func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
-	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("ошибка чтения файла конфигурацй: %w", err)
 	}
+	viper.AutomaticEnv()
 
 	var cfg Config
 

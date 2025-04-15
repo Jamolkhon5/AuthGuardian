@@ -1,15 +1,15 @@
 package token
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"time"
 
 	"github.com/Jamolkhon5/authguardian/internal/models"
+	"github.com/Jamolkhon5/authguardian/pkg/utils"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
 )
 
 type JWTManager struct {
@@ -55,13 +55,21 @@ func (m *JWTManager) GenerateAccessToken(claims models.AccessTokenClaims) (strin
 	return signedToken, expiresAt, nil
 }
 
-func (m *JWTManager) GenerateRefreshToken() (string, string, error) {
-	tokenUUID := uuid.New().String()
-	tokenHash := sha256.Sum256([]byte(tokenUUID + m.refreshSecret))
-	hashString := hex.EncodeToString(tokenHash[:])
-	tokenString := base64.StdEncoding.EncodeToString([]byte(tokenUUID))
+func (m *JWTManager) GenerateRefreshToken(tokenID string) (string, string, error) {
+	tokenString := base64.StdEncoding.EncodeToString([]byte(tokenID))
 
-	return tokenString, hashString, nil
+	h := hmac.New(sha256.New, []byte(m.refreshSecret))
+	h.Write([]byte(tokenID))
+	hmacResult := h.Sum(nil)
+
+	hmacBase64 := base64.StdEncoding.EncodeToString(hmacResult)
+
+	bcryptHash, err := utils.HashPassword(hmacBase64)
+	if err != nil {
+		return "", "", fmt.Errorf("невозможно создать bcrypt хеш: %w", err)
+	}
+
+	return tokenString, bcryptHash, nil
 }
 
 func (m *JWTManager) VerifyAccessToken(tokenString string) (*models.AccessTokenClaims, error) {
@@ -103,16 +111,31 @@ func (m *JWTManager) VerifyAccessToken(tokenString string) (*models.AccessTokenC
 	}, nil
 }
 
-// декодируем токен из base64
-func (m *JWTManager) GetRefreshTokenHash(tokenString string) (string, error) {
+func (m *JWTManager) GetRefreshTokenExpiry() time.Time {
+	return time.Now().Add(m.refreshExpiry)
+}
+
+func (m *JWTManager) VerifyRefreshToken(refreshToken, storedHash string) (bool, error) {
+	tokenBytes, err := base64.StdEncoding.DecodeString(refreshToken)
+	if err != nil {
+		return false, fmt.Errorf("невозможно декодировать refresh token: %w", err)
+	}
+
+	tokenUUID := string(tokenBytes)
+
+	h := hmac.New(sha256.New, []byte(m.refreshSecret))
+	h.Write([]byte(tokenUUID))
+	hmacResult := h.Sum(nil)
+
+	hmacBase64 := base64.StdEncoding.EncodeToString(hmacResult)
+
+	return utils.CheckPasswordHash(hmacBase64, storedHash), nil
+}
+
+func (m *JWTManager) GetRefreshTokenUUID(tokenString string) (string, error) {
 	tokenBytes, err := base64.StdEncoding.DecodeString(tokenString)
 	if err != nil {
 		return "", fmt.Errorf("невозможно декодировать refresh token: %w", err)
 	}
-	tokenHash := sha256.Sum256([]byte(string(tokenBytes) + m.refreshSecret))
-	return hex.EncodeToString(tokenHash[:]), nil
-}
-
-func (m *JWTManager) GetRefreshTokenExpiry() time.Time {
-	return time.Now().Add(m.refreshExpiry)
+	return string(tokenBytes), nil
 }

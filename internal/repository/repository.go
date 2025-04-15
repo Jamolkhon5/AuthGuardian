@@ -15,4 +15,6 @@ type TokenRepository interface {
 	RevokeAllUserTokens(ctx context.Context, userID string) error
 	CleanupExpiredTokens(ctx context.Context, before time.Time) error
 	GetUserByID(ctx context.Context, userID string) (*models.UserData, error)
+	GetRefreshTokenByUserID(ctx context.Context, userID string) ([]*models.RefreshToken, error)
+	GetRefreshTokenByUUID(ctx context.Context, tokenUUID string) (*models.RefreshToken, error)
 }
