@@ -29,12 +29,13 @@ func (s *EmailService) SendIPChangeAlert(userEmail, oldIP, newIP string) error {
 	body := fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
-
+     <p>мы заметили вход с нового IP адреса. Старый IP: %s, Новый IP: %s</p>
 </html>
 `, oldIP, newIP)
+
 	fmt.Printf("Mock sending email to %s: %s\n", userEmail, subject)
 
-	// ToDO бы код отправки email
+	// ToDO код для отправки email
 	// return s.sendEmail(userEmail, subject, body)
 	fmt.Println(body)
 	//для тестирования просто возвращаем успех

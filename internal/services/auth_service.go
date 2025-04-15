@@ -11,6 +11,12 @@ type AuthService struct {
 	tokenService *TokenService
 }
 
+type AuthServiceImpler interface {
+	GetTokens(ctx context.Context, userID, userIP, userAgent string) (*models.TokenPair, error)
+	RefreshTokens(ctx context.Context, refreshToken, userIP, userAgent string) (*models.TokenPair, error)
+	Logout(ctx context.Context, refreshToken string) error
+}
+
 func NewAuthService(tokenService *TokenService) *AuthService {
 	return &AuthService{
 		tokenService: tokenService,

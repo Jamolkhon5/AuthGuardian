@@ -26,12 +26,12 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("дотенв конфиг не найден, использум значения по умолчаню")
+		log.Println("dotenv конфиг не найден, используем значения по умолчанию")
 	}
 
 	cfg, err := config.LoadConfig(".env")
 	if err != nil {
-		log.Fatalf("ошибка загрскзи конфиг %v", err)
+		log.Fatalf("ошибка загрузки конфиг %v", err)
 	}
 
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
@@ -45,7 +45,7 @@ func main() {
 
 	m, err := migrate.New("file://migrations", dbURL)
 	if err != nil {
-		log.Printf("ошибак создания миграцй: %v", err)
+		log.Printf("ошибка создания миграцй: %v", err)
 	} else {
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 			log.Printf("проблеми миграций базы: %v", err)
@@ -68,7 +68,7 @@ func main() {
 	if err := db.Ping(ctx); err != nil {
 		log.Fatalf("подключения к бд ошибка %v", err)
 	}
-	log.Println("коннект с бд успешн")
+	log.Println("коннект с бд успешно")
 
 	tokenRepo := repository.NewPgTokenRepository(db)
 
@@ -100,7 +100,7 @@ func main() {
 		protected.GET("/profile", func(c *gin.Context) {
 			userID, _ := c.Get("user_id")
 			c.JSON(http.StatusOK, gin.H{
-				"message": "это защишеный роут, вхоть ток с токеном",
+				"message": "это защишеный роут, вхоть только с токеном",
 				"user_id": userID,
 			})
 		})
@@ -131,7 +131,7 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("ошика закрытия сервера: %v", err)
+		log.Fatalf("ошибка закрытия сервера: %v", err)
 	}
 
 	log.Println("сервер закрылся нармално")
